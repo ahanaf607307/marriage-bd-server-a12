@@ -27,6 +27,8 @@ async function run() {
     //    mongodb CRUD starts here -----------------
     const usersCollection = client.db("marrigeBD").collection("users");
     const biodatasCollection = client.db("marrigeBD").collection("biodatas");
+    const premiumsCollection = client.db("marrigeBD").collection("premiums");
+    const favoritesCollection = client.db("marrigeBD").collection("favorites");
 
     // set Users Data
     app.post("/users", async (req, res) => {
@@ -92,52 +94,72 @@ async function run() {
 
     // get All bio Data getApi
 
-    // app.get('/biodatas' , async (req, res) => {
-    //   const bioDatas = req.body
-    //   const result = await biodatasCollection.find(bioDatas).toArray()
-    //   res.send(result)
-    // })
+    app.get('/biodatas' , async (req, res) => {
+      const bioDatas = req.body
+      const result = await biodatasCollection.find(bioDatas).toArray()
+      res.send(result)
+    })
+    // get spacipic bio Data getApi by Id
+
+    app.get('/details/:id' , async (req, res) => {
+      const id = req.params.id
+      const filter = {_id : new ObjectId(id)}
+      const result = await biodatasCollection.findOne(filter)
+      res.send(result)
+    })
 
     // get all bio data using filter ----------------
 
-    app.get("/biodatas", async (req, res) => {
-      const { minAge, maxAge, genderType, division } = req.query;
+    // app.get("/biodatas", async (req, res) => {
+    //   const { minAge, maxAge, genderType, division } = req.query;
 
      
-      const filter = {};
+    //   const filter = {};
       
-      if (minAge) {
-        filter.age = { ...filter.age, $gte: parseInt(minAge) };
-      }
-      if (maxAge) {
-        filter.age = { ...filter.age, $lte: parseInt(maxAge) };
-      }
-      if (genderType) {
-        filter.genderType = genderType;
-      }
-      if (division) {
-        filter.division = division;
-      }
-      const result = await biodatasCollection.find(filter).toArray();
+    //   if (minAge) {
+    //     filter.age = { ...filter.age, $gte: parseInt(minAge) };
+    //   }
+    //   if (maxAge) {
+    //     filter.age = { ...filter.age, $lte: parseInt(maxAge) };
+    //   }
+    //   if (genderType) {
+    //     filter.genderType = genderType;
+    //   }
+    //   if (division) {
+    //     filter.division = division;
+    //   }
+    //   const result = await biodatasCollection.find(filter).toArray();
      
-      res.send(result);
-    });
+    //   res.send(result);
+    // });
 
     // get spacipic bio data using email ------
-     app.get('/biodatas/:email' , async (req, res) => {
+     
+    
+    app.get('/biodatas/:email' , async (req, res) => {
       const email = req.params.email
       const query = {email : email}
       const result = await biodatasCollection.find(query).toArray()
       res.send(result)
     })
 
-
+// Favorite Item Post Api ---> 
+app.post('/favorite' , async(req, res) => {
+  const favorite = req.body
+  const result = await favoritesCollection.insertOne(favorite)
+  res.send(result)
+  console.log('favorite result -> ',result)
+})
 
 
 
     // Admin Part ------------->------------>------
 
-    app.post('/premium')
+    app.post('/premiums' , async (req, res) => {
+      const premiumData = req.body
+      const result = await premiumsCollection.insertOne(premiumData)
+      res.send(result)
+    })
 
     //    mongodb CRUD ends here -----------------
   } finally {
