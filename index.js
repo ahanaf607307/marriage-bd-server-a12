@@ -29,6 +29,7 @@ async function run() {
     const biodatasCollection = client.db("marrigeBD").collection("biodatas");
     const premiumsCollection = client.db("marrigeBD").collection("premiums");
     const favoritesCollection = client.db("marrigeBD").collection("favorites");
+    const contactsCollection = client.db("marrigeBD").collection("contacts");
 
     // set Users Data
     app.post("/users", async (req, res) => {
@@ -88,34 +89,32 @@ async function run() {
       const newId = lastId + 1;
       bioDatas.biodataId = newId;
       const result = await biodatasCollection.insertOne(bioDatas);
-      console.log("bio data --->", newId);
       res.send(result);
     });
 
     // get All bio Data getApi
 
-    app.get('/biodatas' , async (req, res) => {
-      const bioDatas = req.body
-      const result = await biodatasCollection.find(bioDatas).toArray()
-      res.send(result)
-    })
+    app.get("/biodatas", async (req, res) => {
+      const bioDatas = req.body;
+      const result = await biodatasCollection.find(bioDatas).toArray();
+      res.send(result);
+    });
     // get spacipic bio Data getApi by Id
 
-    app.get('/details/:id' , async (req, res) => {
-      const id = req.params.id
-      const filter = {_id : new ObjectId(id)}
-      const result = await biodatasCollection.findOne(filter)
-      res.send(result)
-    })
+    app.get("/details/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await biodatasCollection.findOne(filter);
+      res.send(result);
+    });
 
     // get all bio data using filter ----------------
 
     // app.get("/biodatas", async (req, res) => {
     //   const { minAge, maxAge, genderType, division } = req.query;
 
-     
     //   const filter = {};
-      
+
     //   if (minAge) {
     //     filter.age = { ...filter.age, $gte: parseInt(minAge) };
     //   }
@@ -129,37 +128,84 @@ async function run() {
     //     filter.division = division;
     //   }
     //   const result = await biodatasCollection.find(filter).toArray();
-     
+
     //   res.send(result);
     // });
 
     // get spacipic bio data using email ------
-     
-    
-    app.get('/biodatas/:email' , async (req, res) => {
-      const email = req.params.email
-      const query = {email : email}
-      const result = await biodatasCollection.find(query).toArray()
-      res.send(result)
-    })
 
-// Favorite Item Post Api ---> 
-app.post('/favorite' , async(req, res) => {
-  const favorite = req.body
-  const result = await favoritesCollection.insertOne(favorite)
-  res.send(result)
-  console.log('favorite result -> ',result)
-})
+    app.get("/biodatas/:email", async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await biodatasCollection.find(query).toArray();
+      res.send(result);
+    });
 
+    // Favorite Item Post Api --->
+    app.post("/favorite", async (req, res) => {
+      const favorite = req.body;
+      const result = await favoritesCollection.insertOne(favorite);
+      res.send(result);
+    });
 
+    // get Favorite Item Get api -->
+    app.get("/favorite/:favUserEmail", async (req, res) => {
+      const email = req.params.favUserEmail;
+      const params = { favUserEmail: email };
+      const result = await favoritesCollection.find(params).toArray();
+      res.send(result);
+    });
+
+    // delete Favorite item ---->
+
+    app.delete("/favorite/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await favoritesCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    // Get Contact Reuest api Spacipic user by Email
+    app.get("/contact-request/:contactUserEmail", async (req, res) => {
+      const email = req.params.contactUserEmail;
+      const filter = { contactUserEmail: email };
+      const result = await contactsCollection.find(filter).toArray();
+      res.send(result);
+    });
 
     // Admin Part ------------->------------>------
 
-    app.post('/premiums' , async (req, res) => {
-      const premiumData = req.body
-      const result = await premiumsCollection.insertOne(premiumData)
-      res.send(result)
-    })
+    app.post("/premiums", async (req, res) => {
+      const premiumData = req.body;
+      const query = { premiumId: premiumData.premiumId };
+      const existingPremium = await premiumsCollection.findOne(query);
+      if (existingPremium) {
+        return res.send({ message: "Item already Added", insertedId: null });
+      }
+      const result = await premiumsCollection.insertOne(premiumData);
+      res.send(result);
+    });
+
+    // Get Premium api
+    app.get("/premiums", async (req, res) => {
+      const premiums = req.body;
+      const result = await premiumsCollection.find(premiums).toArray();
+      res.send(result);
+    });
+
+    // contact Request Post Api
+    app.post("/contact-request", async (req, res) => {
+      const contacts = req.body;
+      const result = await contactsCollection.insertOne(contacts);
+      res.send(result);
+    });
+
+    // Get Contact Api
+    app.get("/contact-request", async (req, res) => {
+      const contacts = req.body;
+      const result = await contactsCollection.find(contacts);
+      res.send(result);
+    });
 
     //    mongodb CRUD ends here -----------------
   } finally {
