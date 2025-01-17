@@ -63,22 +63,10 @@ async function run() {
       res.send(result);
     });
 
-    // make user premium 
-    app.patch('/users/premium/:id' , async (req, res) => {
-      const id = req.params.id
-      const filter = {_id : new ObjectId(id)}
-      const updatedDoc = {
-        $set : {
-          role : "premium"
-        }
-      }
-      const result = await usersCollection.updateOne(filter , updatedDoc)
-      res.send(result)
-    })
-
     // get Admin User Data
     app.get("/users/admin/:email", async (req, res) => {
       const email = req.params.email;
+
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       let admin = false;
@@ -86,6 +74,27 @@ async function run() {
         admin = user?.role === "admin";
       }
       res.send({ admin });
+    });
+
+    // get User Premium
+    app.get("/users/premium/:email", async (req, res) => {
+     const email = req.params.email
+     const query = {email : email}
+     const result = await usersCollection.findOne(query)
+     res.send(result)
+
+    });
+    // make user premium
+    app.patch("/users/premium/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedDoc = {
+        $set: {
+          role: "premium",
+        },
+      };
+      const result = await usersCollection.updateOne(filter, updatedDoc);
+      res.send(result);
     });
 
     // Add Bio Data Post Api
@@ -235,52 +244,7 @@ async function run() {
       res.send(result);
     });
 
-
     // Payment Method --------------->
-
-    app.post('/create-payment-intent', async (req, res) => {
-      const { price } = req.body;
-      const amount = parseInt(price * 100);
-      console.log(amount, 'amount inside the intent')
-
-      const paymentIntent = await stripe.paymentIntents.create({
-        amount: amount,
-        currency: 'usd',
-        payment_method_types: ['card']
-      });
-
-      res.send({
-        clientSecret: paymentIntent.client_secret
-      })
-    });
-
-
-    app.get('/payments/:email',  async (req, res) => {
-      const query = { email: req.params.email }
-      // if (req.params.email !== req.decoded.email) {
-      //   return res.status(403).send({ message: 'forbidden access' });
-      // }
-      const result = await paymentCollection.find(query).toArray();
-      res.send(result);
-    })
-
-    app.post('/payments', async (req, res) => {
-      const payment = req.body;
-      const paymentResult = await paymentCollection.insertOne(payment);
-
-      //  carefully delete each item from the cart
-      console.log('payment info', payment);
-      const query = {
-        _id: {
-          $in: payment.cartIds.map(id => new ObjectId(id))
-        }
-      };
-
-      const deleteResult = await cartCollection.deleteMany(query);
-
-      res.send({ paymentResult, deleteResult });
-    })
-
 
     //    mongodb CRUD ends here -----------------
   } finally {
