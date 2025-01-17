@@ -78,11 +78,11 @@ async function run() {
 
     // get User Premium
     app.get("/users/premium/:email", async (req, res) => {
-     const email = req.params.email
-     const query = {email : email}
-     const result = await usersCollection.findOne(query)
-     res.send(result)
-
+      const email = req.params.email;
+      const query = { email: email };
+      const result = await usersCollection.findOne(query);
+      res.send(result);
+      console.log("null", result);
     });
     // make user premium
     app.patch("/users/premium/:id", async (req, res) => {
