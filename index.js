@@ -45,8 +45,7 @@ async function run() {
 
     // get Users Data
     app.get("/users", async (req, res) => {
-      const user = req.body;
-      const result = await usersCollection.find(user).toArray();
+      const result = await usersCollection.find().toArray();
       res.send(result);
     });
 
@@ -97,6 +96,14 @@ async function run() {
     app.get("/biodatas", async (req, res) => {
       const bioDatas = req.body;
       const result = await biodatasCollection.find(bioDatas).toArray();
+      res.send(result);
+    });
+    // get All Premium bio Data getApi
+
+    app.get("/biodatas/premium", async (req, res) => {
+      const result = await biodatasCollection
+        .find({ bioDataRole: "premium" })
+        .toArray();
       res.send(result);
     });
     // get spacipic bio Data getApi by Id
@@ -170,6 +177,14 @@ async function run() {
       const email = req.params.contactUserEmail;
       const filter = { contactUserEmail: email };
       const result = await contactsCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    // Delete Contact Request api using id
+    app.delete("/contact-request/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await contactsCollection.deleteOne(query);
       res.send(result);
     });
 
