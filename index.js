@@ -81,7 +81,7 @@ async function run() {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
-      res.send( result);
+      res.send(result);
       console.log("null", result);
     });
     // make user premium
@@ -101,9 +101,9 @@ async function run() {
         },
       };
       const result = await usersCollection.updateOne(filter, updatedDoc);
-      
+
       const isUser = await premiumsCollection.updateOne(filter2, updatedDoc2);
-      res.send(result );
+      res.send(result);
     });
 
     // Add Bio Data Post Api
@@ -236,6 +236,22 @@ async function run() {
     app.get("/premiums", async (req, res) => {
       const premiums = req.body;
       const result = await premiumsCollection.find(premiums).toArray();
+      res.send(result);
+    });
+// Get Premium card 
+
+app.get('/premiums/premiums-card' , async (req, res) => {
+  const query = {status : "approved"}
+  const result = await premiumsCollection.find(query).limit(6).toArray()
+  res.send(result)
+})
+    
+
+    // Get Premium details by id api
+    app.get("/premiums/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await premiumsCollection.findOne(filter);
       res.send(result);
     });
 
