@@ -81,7 +81,7 @@ async function run() {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
-      res.send(result);
+      res.send( result);
       console.log("null", result);
     });
     // make user premium
@@ -93,8 +93,17 @@ async function run() {
           role: "premium",
         },
       };
+      const user = await usersCollection.findOne(filter);
+      const filter2 = { email: user.email };
+      const updatedDoc2 = {
+        $set: {
+          status: "approved",
+        },
+      };
       const result = await usersCollection.updateOne(filter, updatedDoc);
-      res.send(result);
+      
+      const isUser = await premiumsCollection.updateOne(filter2, updatedDoc2);
+      res.send(result );
     });
 
     // Add Bio Data Post Api
