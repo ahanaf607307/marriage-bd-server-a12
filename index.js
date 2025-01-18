@@ -3,6 +3,7 @@ const app = express();
 const cors = require("cors");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
+const stripe = require("stripe")(process.env.PAYMENT_KEY);
 const port = process.env.PORT || 5000;
 
 // middleware
@@ -82,7 +83,6 @@ async function run() {
       const query = { email: email };
       const result = await usersCollection.findOne(query);
       res.send(result);
-      console.log("null", result);
     });
     // make user premium
     app.patch("/users/premium/:id", async (req, res) => {
@@ -129,6 +129,19 @@ async function run() {
       const result = await biodatasCollection.find(bioDatas).toArray();
       res.send(result);
     });
+
+    // get Male / Female Data for details page -------->
+    app.post("/biodatas/for-gender", async (req, res) => {
+      const { genderType } = req.query;
+      console.log("genderType -->", genderType);
+      let filter = {};
+      if (genderType) {
+        filter.genderType = genderType;
+      }
+      const result = await biodatasCollection.find(filter).limit(3).toArray();
+      res.send(result);
+    });
+
     // get All Premium bio Data getApi
 
     app.get("/biodatas/premium", async (req, res) => {
@@ -203,22 +216,6 @@ async function run() {
       res.send(result);
     });
 
-    // Get Contact Reuest api Spacipic user by Email
-    app.get("/contact-request/:contactUserEmail", async (req, res) => {
-      const email = req.params.contactUserEmail;
-      const filter = { contactUserEmail: email };
-      const result = await contactsCollection.find(filter).toArray();
-      res.send(result);
-    });
-
-    // Delete Contact Request api using id
-    app.delete("/contact-request/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await contactsCollection.deleteOne(query);
-      res.send(result);
-    });
-
     // Admin Part ------------->------------>------
 
     app.post("/premiums", async (req, res) => {
@@ -238,14 +235,13 @@ async function run() {
       const result = await premiumsCollection.find(premiums).toArray();
       res.send(result);
     });
-// Get Premium card 
+    // Get Premium card
 
-app.get('/premiums/premiums-card' , async (req, res) => {
-  const query = {status : "approved"}
-  const result = await premiumsCollection.find(query).limit(6).toArray()
-  res.send(result)
-})
-    
+    app.get("/premiums/premiums-card", async (req, res) => {
+      const query = { status: "approved" };
+      const result = await premiumsCollection.find(query).limit(6).toArray();
+      res.send(result);
+    });
 
     // Get Premium details by id api
     app.get("/premiums/:id", async (req, res) => {
@@ -255,7 +251,7 @@ app.get('/premiums/premiums-card' , async (req, res) => {
       res.send(result);
     });
 
-    // contact Request Post Api
+    // payment Request Data Post api
     app.post("/contact-request", async (req, res) => {
       const contacts = req.body;
       const result = await contactsCollection.insertOne(contacts);
@@ -265,11 +261,56 @@ app.get('/premiums/premiums-card' , async (req, res) => {
     // Get Contact Api
     app.get("/contact-request", async (req, res) => {
       const contacts = req.body;
-      const result = await contactsCollection.find(contacts);
+      const result = await contactsCollection.find(contacts).toArray();
+      res.send(result);
+    });
+
+
+    // Get Contact Reuest api Spacipic user by Email
+    app.get("/contact-request/:requesterEmail", async (req, res) => {
+      const email = req.params.requesterEmail;
+      const filter = { requesterEmail: email };
+      const result = await contactsCollection.find(filter).toArray();
+      res.send(result);
+    });
+
+    // Update Contact Request Data 
+    app.patch('/contact-request/:id' , async(req,res) => {
+      const id = req.params.id
+      const filter = {_id : new ObjectId(id)}
+      const updatedDoc = {
+        $set : {
+          status : 'approved'
+        }
+      }
+      const result = await contactsCollection.updateOne(filter , updatedDoc)
+      res.send(result)
+      
+    })
+
+    // Delete Contact Request api using id
+    app.delete("/contact-request/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await contactsCollection.deleteOne(query);
       res.send(result);
     });
 
     // Payment Method --------------->
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = parseInt(price * 100);
+
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: "usd",
+        payment_method_types: ["card"],
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret,
+      });
+    });
 
     //    mongodb CRUD ends here -----------------
   } finally {
