@@ -38,7 +38,7 @@ async function run() {
       const token = jwt.sign(user, process.env.JWT_TOKEN, {
         expiresIn: "365d",
       });
-     
+
       res.send({ token });
     });
 
@@ -83,29 +83,39 @@ async function run() {
 
     // get Users Data
     app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
-      const result = await usersCollection.find().toArray();
+      const query = req.query?.search;
+      const searchQuery = {};
+      if (query) {
+        searchQuery.name = { $regex: query, $options: "i" };
+      }
+      const result = await usersCollection.find(searchQuery).toArray();
       res.send(result);
     });
 
     // make users Admin api
 
-    app.patch("/users/admin/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedDoc = {
-        $set: {
-          role: "admin",
-        },
-      };
-      const result = await usersCollection.updateOne(filter, updatedDoc);
-      res.send(result);
-    });
+    app.patch(
+      "/users/admin/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: "admin",
+          },
+        };
+        const result = await usersCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+      }
+    );
 
     // get Admin User Data
-    app.get("/users/admin/:email",verifyToken, async (req, res) => {
+    app.get("/users/admin/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       if (email !== req.decoded.email) {
-        return res.status(403).send({ message: 'forbidden access' })
+        return res.status(403).send({ message: "forbidden access" });
       }
       const query = { email: email };
       const user = await usersCollection.findOne(query);
@@ -117,36 +127,41 @@ async function run() {
     });
 
     // get User Premium
-    app.get("/users/premium/:email", async (req, res) => {
+    app.get("/users/premium/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
       res.send(result);
     });
     // make user premium
-    app.patch("/users/premium/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedDoc = {
-        $set: {
-          role: "premium",
-        },
-      };
-      const user = await usersCollection.findOne(filter);
-      const filter2 = { email: user.email };
-      const updatedDoc2 = {
-        $set: {
-          bioDataRole: "premium",
-        },
-      };
-      const result = await usersCollection.updateOne(filter, updatedDoc);
+    app.patch(
+      "/users/premium/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            role: "premium",
+          },
+        };
+        const user = await usersCollection.findOne(filter);
+        const filter2 = { email: user.email };
+        const updatedDoc2 = {
+          $set: {
+            bioDataRole: "premium",
+          },
+        };
+        const result = await usersCollection.updateOne(filter, updatedDoc);
 
-      const isUser = await biodatasCollection.updateOne(filter2, updatedDoc2);
-      res.send(result);
-    });
+        const isUser = await biodatasCollection.updateOne(filter2, updatedDoc2);
+        res.send(result);
+      }
+    );
 
     // Add Bio Data Post Api
-    app.post("/biodatas", async (req, res) => {
+    app.post("/biodatas", verifyToken, async (req, res) => {
       const bioDatas = req.body;
       const lastBiodata = await biodatasCollection
         .find({})
@@ -170,7 +185,7 @@ async function run() {
     });
     // get All bio Data getApi for filter
 
-    app.get("/biodatas/admin", async (req, res) => {
+    app.get("/biodatas/admin", verifyToken, verifyAdmin, async (req, res) => {
       const totalMale = await biodatasCollection.countDocuments({
         genderType: "Male",
       });
@@ -229,7 +244,7 @@ async function run() {
     });
     // get spacipic bio Data getApi by Id
 
-    app.get("/details/:id", async (req, res) => {
+    app.get("/details/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await biodatasCollection.findOne(filter);
@@ -263,7 +278,7 @@ async function run() {
 
     // get spacipic bio data using email ------
 
-    app.get("/biodatas/:email", async (req, res) => {
+    app.get("/biodatas/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await biodatasCollection.findOne(query);
@@ -271,7 +286,7 @@ async function run() {
     });
 
     // update Bio Data using Patch --------
-    app.patch("/biodatas-update/:id", async (req, res) => {
+    app.patch("/biodatas-update/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
@@ -330,7 +345,7 @@ async function run() {
     });
 
     // get Favorite Item Get api -->
-    app.get("/favorite/:favUserEmail", async (req, res) => {
+    app.get("/favorite/:favUserEmail", verifyToken, async (req, res) => {
       const email = req.params.favUserEmail;
       const params = { favUserEmail: email };
       const result = await favoritesCollection.find(params).toArray();
@@ -339,7 +354,7 @@ async function run() {
 
     // delete Favorite item ---->
 
-    app.delete("/favorite/:id", async (req, res) => {
+    app.delete("/favorite/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await favoritesCollection.deleteOne(query);
@@ -360,7 +375,7 @@ async function run() {
     });
 
     // Get Premium api
-    app.get("/premiums", async (req, res) => {
+    app.get("/premiums", verifyToken, async (req, res) => {
       const premiums = req.body;
       const result = await premiumsCollection.find(premiums).toArray();
       res.send(result);
@@ -396,28 +411,37 @@ async function run() {
     });
 
     // Get Contact Reuest api Spacipic user by Email
-    app.get("/contact-request/:requesterEmail", async (req, res) => {
-      const email = req.params.requesterEmail;
-      const filter = { requesterEmail: email };
-      const result = await contactsCollection.find(filter).toArray();
-      res.send(result);
-    });
+    app.get(
+      "/contact-request/:requesterEmail",
+      verifyToken,
+      async (req, res) => {
+        const email = req.params.requesterEmail;
+        const filter = { requesterEmail: email };
+        const result = await contactsCollection.find(filter).toArray();
+        res.send(result);
+      }
+    );
 
     // Update Contact Request Data
-    app.patch("/contact-request/:id", async (req, res) => {
-      const id = req.params.id;
-      const filter = { _id: new ObjectId(id) };
-      const updatedDoc = {
-        $set: {
-          status: "approved",
-        },
-      };
-      const result = await contactsCollection.updateOne(filter, updatedDoc);
-      res.send(result);
-    });
+    app.patch(
+      "/contact-request/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const updatedDoc = {
+          $set: {
+            status: "approved",
+          },
+        };
+        const result = await contactsCollection.updateOne(filter, updatedDoc);
+        res.send(result);
+      }
+    );
 
     // Delete Contact Request api using id
-    app.delete("/contact-request/:id", async (req, res) => {
+    app.delete("/contact-request/:id", verifyToken, async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await contactsCollection.deleteOne(query);
