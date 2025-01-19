@@ -32,6 +32,43 @@ async function run() {
     const favoritesCollection = client.db("marrigeBD").collection("favorites");
     const contactsCollection = client.db("marrigeBD").collection("contacts");
 
+    // Create JWT Token -----------
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      const token = jwt.sign(user, process.env.JWT_TOKEN, {
+        expiresIn: "365d",
+      });
+     
+      res.send({ token });
+    });
+
+    // verify Token ---------
+    const verifyToken = (req, res, next) => {
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: "unauthorized access" });
+      }
+      const token = req.headers.authorization.split(" ")[1];
+      jwt.verify(token, process.env.JWT_TOKEN, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: "unauthorized access" });
+        }
+        req.decoded = decoded;
+        next();
+      });
+    };
+
+    //Verify Admin
+    const verifyAdmin = async (req, res, next) => {
+      const email = req.decoded.email;
+      const query = { email: email };
+      const user = await usersCollection.findOne(query);
+      const isAdmin = user?.role === "admin";
+      if (!isAdmin) {
+        return res.status(403).send({ message: "forbidden access" });
+      }
+      next();
+    };
+
     // set Users Data
     app.post("/users", async (req, res) => {
       const user = req.body;
@@ -45,7 +82,7 @@ async function run() {
     });
 
     // get Users Data
-    app.get("/users", async (req, res) => {
+    app.get("/users", verifyToken, verifyAdmin, async (req, res) => {
       const result = await usersCollection.find().toArray();
       res.send(result);
     });
@@ -65,9 +102,11 @@ async function run() {
     });
 
     // get Admin User Data
-    app.get("/users/admin/:email", async (req, res) => {
+    app.get("/users/admin/:email",verifyToken, async (req, res) => {
       const email = req.params.email;
-
+      if (email !== req.decoded.email) {
+        return res.status(403).send({ message: 'forbidden access' })
+      }
       const query = { email: email };
       const user = await usersCollection.findOne(query);
       let admin = false;
