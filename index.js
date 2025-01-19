@@ -75,6 +75,7 @@ async function run() {
         admin = user?.role === "admin";
       }
       res.send({ admin });
+      console.log('admin' , admin)
     });
 
     // get User Premium
@@ -159,7 +160,7 @@ async function run() {
       res.send(result);
     });
 
-    // get all bio data using filter ----------------
+    // get One EditBioData route bio data using filter ----------------
 
     // app.get("/biodatas", async (req, res) => {
     //   const { minAge, maxAge, genderType, division } = req.query;
@@ -188,9 +189,57 @@ async function run() {
     app.get("/biodatas/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
-      const result = await biodatasCollection.find(query).toArray();
+      const result = await biodatasCollection.findOne(query);
       res.send(result);
     });
+
+    // update Bio Data using Patch --------
+    app.patch("/biodatas-update/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id : new ObjectId(id) };
+      const options = {upsert:true}
+      const bodyData = req.body
+      const updatedDoc = {
+        $set: {
+          name :bodyData.name,
+          imageLink :bodyData.imageLink,
+          date :bodyData.date,
+          genderType :bodyData.genderType,
+          height :bodyData.height,
+          weight :bodyData.weight,
+          age :bodyData.age,
+          occupation :bodyData.occupation,
+          skinColor :bodyData.skinColor,
+          fathersName :bodyData.fathersName,
+          partnerAge :bodyData.partnerAge,
+          mothersName :bodyData.mothersName,
+          partnerHeight :bodyData.partnerHeight,
+          partnerWeight :bodyData.partnerWeight,
+          permanentDivision :bodyData.permanentDivision,
+          presentDivision :bodyData.presentDivision,
+          mobileNumber :bodyData.mobileNumber,
+          email :bodyData.email,
+          userRole :bodyData.userRole,
+          bioDataRole :bodyData.bioDataRole,
+        }
+      }
+      const result = await biodatasCollection.updateOne(filter , updatedDoc, options)
+      res.send(result);
+    });
+
+    // get existing bio Data Filterring 
+    app.get('/biodatas-existing/:email', async(req,res) => {
+      const email = req.params.email;
+      const query = { email: email };
+      const user = await biodatasCollection.findOne(query);
+  
+      let biodata = false;
+      if (user) {
+        biodata = user?.email === email ;
+      }
+      console.log('xxxxxx' , {biodata})
+      res.send({ biodata });
+    })
 
     // Favorite Item Post Api --->
     app.post("/favorite", async (req, res) => {
