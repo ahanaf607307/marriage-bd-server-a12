@@ -129,8 +129,47 @@ async function run() {
       const result = await biodatasCollection.find(bioDatas).toArray();
       res.send(result);
     });
+    // get All bio Data getApi for filter
 
-    // get Male / Female Data for details page -------->
+    app.get("/biodatas/admin", async (req, res) => {
+      const totalMale = await biodatasCollection.countDocuments({
+        genderType: "Male",
+      });
+
+      const totalFemale = await biodatasCollection.countDocuments({
+        genderType: "Female",
+      });
+      const totalPremium = await biodatasCollection.countDocuments({
+        bioDataRole: "premium",
+      });
+
+      const totalRevenue = await contactsCollection
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalRevenue: {
+                $sum: "$price",
+              },
+            },
+          },
+        ])
+        .toArray();
+
+      const revenue =
+        totalRevenue.length > 0 ? totalRevenue[0].totalRevenue : 0;
+
+      const totalBiodata = await biodatasCollection.countDocuments();
+
+      res.send({
+        totalMale: totalMale,
+        totalFemale: totalFemale,
+        totalBiodata: totalBiodata,
+        revenue: revenue,
+      });
+    });
+
+    // get Male / Female Data for details page ->
     app.post("/biodatas/for-gender", async (req, res) => {
       const { genderType } = req.query;
       let filter = {};
@@ -161,8 +200,8 @@ async function run() {
     // get One Biodatas route bio data using filter ----------------
 
     app.get("/biodatas/filter", async (req, res) => {
-      const { minAge, maxAge, genderType, division } = req.query;
-
+      const { minAge, maxAge, genderType, permanentDivision } = req.query;
+      // console.log(minAge , maxAge  , genderType , permanentDivision)
       const filter = {};
 
       if (minAge) {
@@ -174,9 +213,10 @@ async function run() {
       if (genderType) {
         filter.genderType = genderType;
       }
-      if (division) {
-        filter.division = division;
+      if (permanentDivision) {
+        filter.permanentDivision = permanentDivision;
       }
+      console.log(filter);
       const result = await biodatasCollection.find(filter).toArray();
 
       res.send(result);
