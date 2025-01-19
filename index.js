@@ -97,12 +97,12 @@ async function run() {
       const filter2 = { email: user.email };
       const updatedDoc2 = {
         $set: {
-          status: "approved",
+          bioDataRole: "premium",
         },
       };
       const result = await usersCollection.updateOne(filter, updatedDoc);
 
-      const isUser = await premiumsCollection.updateOne(filter2, updatedDoc2);
+      const isUser = await biodatasCollection.updateOne(filter2, updatedDoc2);
       res.send(result);
     });
 
@@ -237,9 +237,9 @@ async function run() {
     });
     // Get Premium card
 
-    app.get("/premiums/premiums-card", async (req, res) => {
-      const query = { status: "approved" };
-      const result = await premiumsCollection.find(query).limit(6).toArray();
+    app.get("/biodatas-premium", async (req, res) => {
+      const query = { bioDataRole: "premium" };
+      const result = await biodatasCollection.find(query).limit(6).toArray();
       res.send(result);
     });
 
