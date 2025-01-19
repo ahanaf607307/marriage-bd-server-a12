@@ -75,7 +75,6 @@ async function run() {
         admin = user?.role === "admin";
       }
       res.send({ admin });
-      console.log('admin' , admin)
     });
 
     // get User Premium
@@ -134,7 +133,6 @@ async function run() {
     // get Male / Female Data for details page -------->
     app.post("/biodatas/for-gender", async (req, res) => {
       const { genderType } = req.query;
-      console.log("genderType -->", genderType);
       let filter = {};
       if (genderType) {
         filter.genderType = genderType;
@@ -160,29 +158,29 @@ async function run() {
       res.send(result);
     });
 
-    // get One EditBioData route bio data using filter ----------------
+    // get One Biodatas route bio data using filter ----------------
 
-    // app.get("/biodatas", async (req, res) => {
-    //   const { minAge, maxAge, genderType, division } = req.query;
+    app.get("/biodatas/filter", async (req, res) => {
+      const { minAge, maxAge, genderType, division } = req.query;
 
-    //   const filter = {};
+      const filter = {};
 
-    //   if (minAge) {
-    //     filter.age = { ...filter.age, $gte: parseInt(minAge) };
-    //   }
-    //   if (maxAge) {
-    //     filter.age = { ...filter.age, $lte: parseInt(maxAge) };
-    //   }
-    //   if (genderType) {
-    //     filter.genderType = genderType;
-    //   }
-    //   if (division) {
-    //     filter.division = division;
-    //   }
-    //   const result = await biodatasCollection.find(filter).toArray();
+      if (minAge) {
+        filter.age = { ...filter.age, $gte: parseInt(minAge) };
+      }
+      if (maxAge) {
+        filter.age = { ...filter.age, $lte: parseInt(maxAge) };
+      }
+      if (genderType) {
+        filter.genderType = genderType;
+      }
+      if (division) {
+        filter.division = division;
+      }
+      const result = await biodatasCollection.find(filter).toArray();
 
-    //   res.send(result);
-    // });
+      res.send(result);
+    });
 
     // get spacipic bio data using email ------
 
@@ -196,50 +194,54 @@ async function run() {
     // update Bio Data using Patch --------
     app.patch("/biodatas-update/:id", async (req, res) => {
       const id = req.params.id;
-      const filter = { _id : new ObjectId(id) };
-      const options = {upsert:true}
-      const bodyData = req.body
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const bodyData = req.body;
       const updatedDoc = {
         $set: {
-          name :bodyData.name,
-          imageLink :bodyData.imageLink,
-          date :bodyData.date,
-          genderType :bodyData.genderType,
-          height :bodyData.height,
-          weight :bodyData.weight,
-          age :bodyData.age,
-          occupation :bodyData.occupation,
-          skinColor :bodyData.skinColor,
-          fathersName :bodyData.fathersName,
-          partnerAge :bodyData.partnerAge,
-          mothersName :bodyData.mothersName,
-          partnerHeight :bodyData.partnerHeight,
-          partnerWeight :bodyData.partnerWeight,
-          permanentDivision :bodyData.permanentDivision,
-          presentDivision :bodyData.presentDivision,
-          mobileNumber :bodyData.mobileNumber,
-          email :bodyData.email,
-          userRole :bodyData.userRole,
-          bioDataRole :bodyData.bioDataRole,
-        }
-      }
-      const result = await biodatasCollection.updateOne(filter , updatedDoc, options)
+          name: bodyData.name,
+          imageLink: bodyData.imageLink,
+          date: bodyData.date,
+          genderType: bodyData.genderType,
+          height: bodyData.height,
+          weight: bodyData.weight,
+          age: bodyData.age,
+          occupation: bodyData.occupation,
+          skinColor: bodyData.skinColor,
+          fathersName: bodyData.fathersName,
+          partnerAge: bodyData.partnerAge,
+          mothersName: bodyData.mothersName,
+          partnerHeight: bodyData.partnerHeight,
+          partnerWeight: bodyData.partnerWeight,
+          permanentDivision: bodyData.permanentDivision,
+          presentDivision: bodyData.presentDivision,
+          mobileNumber: bodyData.mobileNumber,
+          email: bodyData.email,
+          userRole: bodyData.userRole,
+          bioDataRole: bodyData.bioDataRole,
+        },
+      };
+      const result = await biodatasCollection.updateOne(
+        filter,
+        updatedDoc,
+        options
+      );
       res.send(result);
     });
 
-    // get existing bio Data Filterring 
-    app.get('/biodatas-existing/:email', async(req,res) => {
+    // get existing bio Data Filterring
+    app.get("/biodatas-existing/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const user = await biodatasCollection.findOne(query);
-  
+
       let biodata = false;
       if (user) {
-        biodata = user?.email === email ;
+        biodata = user?.email === email;
       }
-      console.log('xxxxxx' , {biodata})
+
       res.send({ biodata });
-    })
+    });
 
     // Favorite Item Post Api --->
     app.post("/favorite", async (req, res) => {
@@ -314,7 +316,6 @@ async function run() {
       res.send(result);
     });
 
-
     // Get Contact Reuest api Spacipic user by Email
     app.get("/contact-request/:requesterEmail", async (req, res) => {
       const email = req.params.requesterEmail;
@@ -323,19 +324,18 @@ async function run() {
       res.send(result);
     });
 
-    // Update Contact Request Data 
-    app.patch('/contact-request/:id' , async(req,res) => {
-      const id = req.params.id
-      const filter = {_id : new ObjectId(id)}
+    // Update Contact Request Data
+    app.patch("/contact-request/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
       const updatedDoc = {
-        $set : {
-          status : 'approved'
-        }
-      }
-      const result = await contactsCollection.updateOne(filter , updatedDoc)
-      res.send(result)
-      
-    })
+        $set: {
+          status: "approved",
+        },
+      };
+      const result = await contactsCollection.updateOne(filter, updatedDoc);
+      res.send(result);
+    });
 
     // Delete Contact Request api using id
     app.delete("/contact-request/:id", async (req, res) => {
