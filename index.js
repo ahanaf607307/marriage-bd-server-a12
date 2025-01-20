@@ -276,7 +276,7 @@ async function run() {
 
     app.get("/biodatas/filter", async (req, res) => {
       const { minAge, maxAge, genderType, permanentDivision } = req.query;
-      // console.log(minAge , maxAge  , genderType , permanentDivision)
+     
       const filter = {};
 
       if (minAge) {
@@ -291,7 +291,7 @@ async function run() {
       if (permanentDivision) {
         filter.permanentDivision = permanentDivision;
       }
-      console.log(filter);
+    
       const result = await biodatasCollection.find(filter).toArray();
 
       res.send(result);
@@ -386,7 +386,6 @@ async function run() {
     app.post('/successStory' , async(req,res) => {
       const successStory = req.body
       const result = await storysCollection.insertOne(successStory)
-      console.log(result)
       res.send(result)
     })
 
