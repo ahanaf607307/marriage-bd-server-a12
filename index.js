@@ -128,7 +128,7 @@ async function run() {
     });
 
     // get User Premium
-    app.get("/users/premium/:email", async (req, res) => {
+    app.get("/users/premium/:email",verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
@@ -245,7 +245,7 @@ async function run() {
     });
 
     // get Male / Female Data for details page ->
-    app.post("/biodatas/for-gender", async (req, res) => {
+    app.post("/biodatas/for-gender",verifyToken, async (req, res) => {
       const { genderType } = req.query;
       let filter = {};
       if (genderType) {
@@ -345,7 +345,7 @@ async function run() {
     });
 
     // get existing bio Data Filterring
-    app.get("/biodatas-existing/:email", async (req, res) => {
+    app.get("/biodatas-existing/:email",verifyToken, async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const user = await biodatasCollection.findOne(query);
@@ -383,7 +383,7 @@ async function run() {
     });
 
     // Success Story Post api ------->
-    app.post('/successStory' , async(req,res) => {
+    app.post('/successStory' , verifyToken, async(req,res) => {
       const successStory = req.body
       const result = await storysCollection.insertOne(successStory)
       res.send(result)
@@ -404,7 +404,7 @@ async function run() {
 
     // Admin Part ------------->------------>------
 
-    app.post("/premiums", async (req, res) => {
+    app.post("/premiums",verifyToken, async (req, res) => {
       const premiumData = req.body;
       const query = { premiumId: premiumData.premiumId };
       const existingPremium = await premiumsCollection.findOne(query);
