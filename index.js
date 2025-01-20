@@ -128,7 +128,7 @@ async function run() {
     });
 
     // get User Premium
-    app.get("/users/premium/:email", verifyToken, async (req, res) => {
+    app.get("/users/premium/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
