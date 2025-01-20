@@ -31,6 +31,7 @@ async function run() {
     const premiumsCollection = client.db("marrigeBD").collection("premiums");
     const favoritesCollection = client.db("marrigeBD").collection("favorites");
     const contactsCollection = client.db("marrigeBD").collection("contacts");
+    const storysCollection = client.db("marrigeBD").collection("storys");
 
     // Create JWT Token -----------
     app.post("/jwt", async (req, res) => {
@@ -183,7 +184,7 @@ async function run() {
       const result = await biodatasCollection.find(bioDatas).toArray();
       res.send(result);
     });
-    // get All bio Data getApi for filter
+    // get All bio Data getApi for filter for Admin
 
     app.get("/biodatas/admin", verifyToken, verifyAdmin, async (req, res) => {
       const totalMale = await biodatasCollection.countDocuments({
@@ -219,7 +220,27 @@ async function run() {
         totalMale: totalMale,
         totalFemale: totalFemale,
         totalBiodata: totalBiodata,
+        totalPremium : totalPremium,
         revenue: revenue,
+      });
+    });
+    // get All bio Data getApi for filter for User
+
+    app.get("/biodatas/user", async (req, res) => {
+      const totalMale = await biodatasCollection.countDocuments({
+        genderType: "Male",
+      });
+
+      const totalFemale = await biodatasCollection.countDocuments({
+        genderType: "Female",
+      });
+
+      const totalBiodata = await biodatasCollection.countDocuments();
+
+      res.send({
+        totalMale: totalMale,
+        totalFemale: totalFemale,
+        totalBiodata: totalBiodata,
       });
     });
 
@@ -360,6 +381,27 @@ async function run() {
       const result = await favoritesCollection.deleteOne(query);
       res.send(result);
     });
+
+    // Success Story Post api ------->
+    app.post('/successStory' , async(req,res) => {
+      const successStory = req.body
+      const result = await storysCollection.insertOne(successStory)
+      console.log(result)
+      res.send(result)
+    })
+
+    // Get Success Story get api ------->
+    app.get('/successStory' , async(req,res) => {
+      const successStory = req.body
+      const result = await storysCollection.find(successStory).toArray()
+      res.send(result)
+    })
+    // Get Limited Success Story get api ------->
+    app.get('/successStory/home' , async(req,res) => {
+      const successStory = req.body
+      const result = await storysCollection.find(successStory).limit(4).toArray()
+      res.send(result)
+    })
 
     // Admin Part ------------->------------>------
 
