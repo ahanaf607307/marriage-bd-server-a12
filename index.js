@@ -235,11 +235,13 @@ async function run() {
       });
 
       const totalBiodata = await biodatasCollection.countDocuments();
+      const totalMarrige = await storysCollection.countDocuments()
 
       res.send({
         totalMale: totalMale,
         totalFemale: totalFemale,
         totalBiodata: totalBiodata,
+        totalMarrige : totalMarrige,
       });
     });
 
