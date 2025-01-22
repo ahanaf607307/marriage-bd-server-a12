@@ -396,7 +396,7 @@ async function run() {
     })
 
  
-    // Get Limited Success Story get api ------->
+    // Get Limited Success Story get api -->
     app.get('/successStory/home' , async(req,res) => {
       const successStory = req.body
   const result = await storysCollection.find(successStory).limit(4).toArray()
