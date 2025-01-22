@@ -296,7 +296,7 @@ async function run() {
       res.send(result);
     });
 
-    // get spacipic bio data using email ------
+    // get spacipic bio data using email ---
 
     app.get("/biodatas/:email", verifyToken, async (req, res) => {
       const email = req.params.email;
@@ -388,7 +388,7 @@ async function run() {
       res.send(result)
     })
 
-    // Get Success Story get api ------->
+    // Get Success Story get api data ------->
     app.get('/successStory' , async(req,res) => {
       const successStory = req.body
       const result = await storysCollection.find(successStory).toArray()
