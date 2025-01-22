@@ -39,8 +39,6 @@ async function run() {
       const token = jwt.sign(user, process.env.JWT_TOKEN, {
         expiresIn: "365d",
       });
-
-      console.log({token})
       res.send({ token });
     });
 
@@ -396,7 +394,8 @@ async function run() {
       const result = await storysCollection.find(successStory).toArray()
       res.send(result)
     })
-  
+
+ 
     // Get Limited Success Story get api ------->
     app.get('/successStory/home' , async(req,res) => {
       const successStory = req.body
