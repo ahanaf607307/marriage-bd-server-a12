@@ -40,6 +40,7 @@ async function run() {
         expiresIn: "365d",
       });
 
+      console.log({token})
       res.send({ token });
     });
 
@@ -395,12 +396,21 @@ async function run() {
       const result = await storysCollection.find(successStory).toArray()
       res.send(result)
     })
+  
     // Get Limited Success Story get api ------->
     app.get('/successStory/home' , async(req,res) => {
       const successStory = req.body
-      const result = await storysCollection.find(successStory).limit(4).toArray()
+  const result = await storysCollection.find(successStory).limit(4).toArray()
       res.send(result)
     })
+
+      // Get Success Story get api ------->
+      app.get('/successStory/:id' , async(req,res) => {
+        const id = req.params.id;
+        const filter = { _id: new ObjectId(id) };
+        const result = await storysCollection.findOne(filter);
+        res.send(result);
+      })
 
     // Admin Part ------------->------------>------
 
