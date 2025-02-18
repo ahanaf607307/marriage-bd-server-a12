@@ -127,7 +127,7 @@ async function run() {
     });
 
     // get User Premium
-    app.get("/users/premium/:email",verifyToken, async (req, res) => {
+    app.get("/users/premium/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await usersCollection.findOne(query);
@@ -266,7 +266,7 @@ async function run() {
     });
     // get spacipic bio Data getApi by Id
 
-    app.get("/details/:id", verifyToken, async (req, res) => {
+    app.get("/details/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await biodatasCollection.findOne(filter);
