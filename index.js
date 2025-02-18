@@ -427,7 +427,7 @@ async function run() {
     });
 
     // Get Premium api
-    app.get("/premiums", verifyToken, async (req, res) => {
+    app.get("/premiums", async (req, res) => {
       const premiums = req.body;
       const result = await premiumsCollection.find(premiums).toArray();
       res.send(result);
