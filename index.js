@@ -246,7 +246,7 @@ async function run() {
     });
 
     // get Male / Female Data for details page ->
-    app.post("/biodatas/for-gender",verifyToken, async (req, res) => {
+    app.post("/biodatas/for-gender", async (req, res) => {
       const { genderType } = req.query;
       let filter = {};
       if (genderType) {
@@ -300,7 +300,7 @@ async function run() {
 
     // get spacipic bio data using email ---
 
-    app.get("/biodatas/:email", verifyToken, async (req, res) => {
+    app.get("/biodatas/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
       const result = await biodatasCollection.findOne(query);
